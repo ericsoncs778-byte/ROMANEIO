@@ -1,0 +1,21 @@
+{
+  "name": "romaneio-hiperideal",
+  "version": "46.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "dev": "node server/dev.mjs",
+    "start": "node server/dev.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:operacao": "node tests/operacao.cjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.119.0"
+  },
+  "devDependencies": {
+    "gifuct-js": "2.1.2",
+    "jsdom": "26.1.0"
+  }
+}
