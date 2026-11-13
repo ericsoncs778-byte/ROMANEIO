@@ -1,6 +1,7 @@
 (() => {
   const app = window.RomaneioApp;
   const cloud = new window.RomaneioCloud();
+  const AUTO_REFRESH_MS = 30 * 60 * 1000;
   const key = app.key;
   let ready = false, busy = false, editing = false, initializing = false;
   let unsent;
@@ -89,7 +90,7 @@
   }, true);
   for (const event of ['input', 'change']) document.addEventListener(event, e => { if (e.target.closest?.('main')) editing = true; });
   // Poll without discarding a form, an active receipt/camera or a pending save.
-  setInterval(() => void refresh(), 15000);
+  setInterval(() => void refresh(), AUTO_REFRESH_MS);
   window.addEventListener('focus', () => void refresh());
   window.RomaneioSync = { save, refresh, resetEditing() { editing = false; }, get ready() { return ready; }, get busy() { return busy; } };
   window.romaneioCloudReady = initialize();

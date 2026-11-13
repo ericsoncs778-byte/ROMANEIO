@@ -49,7 +49,7 @@ O HTML operacional é enviado somente após o servidor validar a sessão com `au
 
 Toda operação aguarda a confirmação do Supabase antes de indicar sucesso ou avançar para a impressão. A função `save_romaneios` executa um lote inteiro em uma transação, com uma versão por registro. Se outro aparelho já alterou o mesmo romaneio, o lote é recusado integralmente com conflito de versão. As funções são SECURITY INVOKER; a autorização continua aplicada no banco.
 
-A interface busca atualizações a cada 15 segundos e ao retornar à janela. O botão **Atualizar dados** força uma busca. A atualização automática aguarda quando há campos em edição, recebimento em andamento, câmera aberta ou uma gravação pendente, evitando descartar um formulário. A lista é paginada e a API mantém cada resposta abaixo do limite da hospedagem.
+A interface busca atualizações automaticamente a cada **30 minutos** e ao retornar à janela. O botão **Atualizar dados** força uma busca. A atualização automática aguarda quando há campos em edição, recebimento em andamento, câmera aberta ou uma gravação pendente, evitando descartar um formulário. A validação da sessão permanece separada da atualização dos dados, para manter a autenticação protegida. A lista é paginada e a API mantém cada resposta abaixo do limite da hospedagem.
 
 Esta versão precisa de conexão para confirmar gravações. Em falhas ou conflitos, restaura o último estado confirmado e preserva uma cópia da tentativa em **Baixar alteração não confirmada**. Não há confirmação falsa de envio nem reenvio automático sobre uma versão mais recente.
 
