@@ -1,0 +1,146 @@
+[
+  {
+    "nome": "Amazonas",
+    "endereco": "Rua Amazonas, 1541 - Pituba - Salvador - BA - CEP 41830-380"
+  },
+  {
+    "nome": "Apipema",
+    "endereco": "Rua Professor Sabino Silva, 607 - Apipema - Salvador - BA - CEP 40155-250"
+  },
+  {
+    "nome": "Armação",
+    "endereco": "Avenida Simon Bolívar, s/n - Armação - Salvador - BA - CEP 41750-230"
+  },
+  {
+    "nome": "Barra",
+    "endereco": "Rua Marquês de Caravelas, 171 - Barra - Salvador - BA - CEP 40140-241"
+  },
+  {
+    "nome": "Canela",
+    "endereco": "Avenida Reitor Miguel Calmon, 1977 - Canela - Salvador - BA - CEP 40110-100"
+  },
+  {
+    "nome": "Graça",
+    "endereco": "Avenida Euclydes da Cunha, 8 - Graça - Salvador - BA - CEP 40150-120"
+  },
+  {
+    "nome": "Horto",
+    "endereco": "Avenida Vasco da Gama, 864 - Brotas - Salvador - BA - CEP 40290-350"
+  },
+  {
+    "nome": "Lapa",
+    "endereco": "Avenida Vale do Tororó, Estação da Lapa, s/n - Tororó - Salvador - BA - CEP 40050-290"
+  },
+  {
+    "nome": "Manoel Dias",
+    "endereco": "Avenida Manoel Dias da Silva, 1175 - Pituba - Salvador - BA - CEP 40830-000"
+  },
+  {
+    "nome": "Shopping Paralela",
+    "endereco": "Avenida Luís Viana, 8544 - Patamares - Salvador - BA - CEP 41730-101"
+  },
+  {
+    "nome": "Vila Laura",
+    "endereco": "Rua Raul Leite, 46 - Vila Laura - Salvador - BA - CEP 40270-010"
+  },
+  {
+    "nome": "Vitória",
+    "endereco": "Avenida Sete de Setembro, 304 - Campo Grande - Salvador - BA - CEP 40080-001"
+  },
+  {
+    "nome": "Alphaville",
+    "endereco": "Avenida Alphaville, s/n - Alphaville I - Salvador - BA - CEP 41701-015"
+  },
+  {
+    "nome": "Aquarius",
+    "endereco": "Rua Desembargador Álvaro Clemente de Oliveira, 1681 - Aquarius - Salvador - BA - CEP 41771-020"
+  },
+  {
+    "nome": "Caminho das Árvores",
+    "endereco": "Alameda dos Sombreiros, 270 - Caminho das Árvores - Salvador - BA - CEP 41820-420"
+  },
+  {
+    "nome": "Cidade Jardim",
+    "endereco": "Avenida Juracy Magalhães Júnior, 1034 - Cidade Jardim - Salvador - BA - CEP 40295-140"
+  },
+  {
+    "nome": "Eco Stella",
+    "endereco": "Rua Capitão Melo, 171 - Stella Maris - Salvador - BA - CEP 41600-610"
+  },
+  {
+    "nome": "Feira de Santana",
+    "endereco": "Avenida Noide Ferreira de Cerqueira, 7450 - Feira de Santana - BA - CEP 44082-225"
+  },
+  {
+    "nome": "Guarajuba",
+    "endereco": "Rodovia BA-099 Estrada do Coco, km 42 - Guarajuba - Camaçari - BA - CEP 42840-310"
+  },
+  {
+    "nome": "Itaigara",
+    "endereco": "Rua Anísio Teixeira, s/n - Itaigara - Salvador - BA - CEP 41815-060"
+  },
+  {
+    "nome": "Litoral Norte",
+    "endereco": "Estrada do Coco, 8222 - Portão - Lauro de Freitas - BA - CEP 42700-000"
+  },
+  {
+    "nome": "Orla",
+    "endereco": "Avenida Octávio Mangabeira, 4435 - Armação - Salvador - BA - CEP 41750-240"
+  },
+  {
+    "nome": "Orlando Gomes",
+    "endereco": "Rua da Gratidão, s/n - Piatã - Salvador - BA - CEP 41650-195"
+  },
+  {
+    "nome": "Parque Shopping Bahia",
+    "endereco": "Avenida Santos Dumont, 4360, lojas 1057/1058 - Centro - Lauro de Freitas - BA - CEP 42702-400"
+  },
+  {
+    "nome": "Patamares",
+    "endereco": "Avenida Ibaripitanga, 374 - Patamares - Salvador - BA - CEP 41680-360"
+  },
+  {
+    "nome": "Piatã (temporariamente fechada)",
+    "endereco": "Avenida Otávio Mangabeira, 1024 - Piatã - Salvador - BA - CEP 41650-000"
+  },
+  {
+    "nome": "Pituba",
+    "endereco": "Rua Ceará, 339 - Pituba - Salvador - BA - CEP 40301-155"
+  },
+  {
+    "nome": "Praia do Forte",
+    "endereco": "Rodovia BA-099, km 54, lote 04 - Praia do Forte - Mata de São João - BA - CEP 48280-000"
+  },
+  {
+    "nome": "Stella Maris",
+    "endereco": "Rua Missionário Otto Nelson, 100 - Stella Maris - Salvador - BA - CEP 41600-650"
+  },
+  {
+    "nome": "Hiperideal em Casa - Costa España",
+    "endereco": "Avenida Oceânica, 1454 - Barra - Salvador - BA - CEP 40170-010 (acesso exclusivo a moradores)"
+  },
+  {
+    "nome": "Hiperideal em Casa - Hemisphere",
+    "endereco": "Rua Sítio do Pombal, 300 - Pituaçu - Salvador - BA - CEP 41740-380 (acesso exclusivo a moradores)"
+  },
+  {
+    "nome": "Hiperideal em Casa - Iberostate",
+    "endereco": "BA-099, km 57 - Açu da Torre - Mata de São João - BA - CEP 48280-000 (acesso exclusivo a moradores)"
+  },
+  {
+    "nome": "Hiperideal em Casa - Panamby",
+    "endereco": "Avenida Santa Luzia, 610 - Horto Florestal - Salvador - BA - CEP 40286-000 (acesso exclusivo a moradores)"
+  },
+  {
+    "nome": "Hiperideal em Casa - Sauípe",
+    "endereco": "Rodovia BA-099, km 76 - Mata de São João - BA - CEP 48280-000 (acesso exclusivo a moradores)"
+  },
+  {
+    "nome": "Padoca Ideal - Le Parc",
+    "endereco": "Rua Le Champ, loja 131 - Patamares - Salvador - BA - CEP 41680-090"
+  },
+  {
+    "nome": "Fábrica de Pães Hiperideal",
+    "endereco": "Avenida Octávio Mangabeira, 4435 - Armação - Salvador - BA - CEP 41750-240"
+  }
+]

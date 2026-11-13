@@ -15,6 +15,19 @@ const alerts = [], prints = [], backups = [], checks = [];
 w.alert = message => alerts.push(message);
 w.confirm = () => true;
 w.scrollTo = () => {};
+w.AbortSignal = AbortSignal;
+w.crypto.randomUUID = require('node:crypto').randomUUID;
+const cloudRows = new Map();
+w.fetch = async (url, options={}) => {
+ if(options.method === 'POST') {
+  const changes=JSON.parse(options.body).changes;
+  assert.ok(changes.every(c=>(cloudRows.get(c.id)?.version||0)===c.expectedVersion));
+  const rows=changes.map(c=>({id:c.id,payload:c.payload,version:c.expectedVersion+1}));
+  rows.forEach(row=>cloudRows.set(row.id,structuredClone(row)));
+  return new Response(JSON.stringify({rows}));
+ }
+ return new Response(JSON.stringify({rows:[...cloudRows.values()],next:null,canWrite:true}));
+};
 w.RomaneioAndroid = {printDocument: html => prints.push(html), saveBackup: json => backups.push(json)};
 for (const script of [...w.document.scripts]) { if(script.getAttribute('src') === '/assets/session.js') continue; w.eval(script.src ? fs.readFileSync(root + script.getAttribute('src').slice(1),'utf8') : script.textContent); }
 const ev = expression => w.eval(expression);
@@ -31,6 +44,7 @@ function decodeImage(uri) {
 }
 
 (async () => {
+  await w.romaneioCloudReady;
   ev("nav('cd')");
   for (const [id,value] of Object.entries({loja:'Amazonas',tipo:'CARGA SECA',endereco:'Endereço de teste',placa:'ABC1D23',motorista:'Motorista Teste',responsavelExpedicao:'Expedição Teste',fundo:'CD-F1',lateral:'CD-L1',qtdPaletes:'2'})) field(id,value);
   ev('gerarPaletes()');
@@ -44,6 +58,7 @@ function decodeImage(uri) {
   }
   assert.equal(byId('formCD').checkValidity(), true);
   byId('formCD').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+  await new Promise(resolve=>setImmediate(resolve));
   let data=getDB();
   assert.equal(data.length,3);
   assert.deepEqual(data.map(x=>x.paletes.length),[2,1,1]);
@@ -66,11 +81,11 @@ function decodeImage(uri) {
   }
   fs.writeFileSync(path.join(results,'print_smoke.html'),prints.at(-1));
   check('Ponte de impressão: romaneio, crachás e conjunto com 1/2/3 folhas lógicas, sem imagens externas');
-  ev('saida()');
+  await ev('saida()');
   assert.ok(getDB().every(x=>x.saida));
   ev("nav('loja');renderLoja('Apipema')");
   field('enc_'+data[1].id,'Encarregado');field('conf_'+data[1].id,'Conferente');
-  ev(`chegada('${data[1].id}')`);
+  await ev(`chegada('${data[1].id}')`);
   assert.equal(getDB()[1].chegada,null);
   assert.match(alerts.at(-1),/anterior/);
   check('Loja 2 bloqueada antes de a Loja 1 finalizar e informar lacres');
@@ -78,17 +93,17 @@ function decodeImage(uri) {
     const cargo=data[i];
     ev(`nav('loja');renderLoja('${cargo.loja}')`);
     field('enc_'+cargo.id,'Encarregado '+i);field('conf_'+cargo.id,'Conferente '+i);
-    ev(`chegada('${cargo.id}');conferir('${cargo.id}')`);
+    await ev(`chegada('${cargo.id}')`);ev(`conferir('${cargo.id}')`);
     field('lacre_fundo_receb','ERRADO');field('lacre_lateral_receb','ERRADO');
-    ev(`validarLacres('${cargo.id}')`);
+    await ev(`validarLacres('${cargo.id}')`);
     assert.ok(!getDB()[i].lacresValidados);
     field('lacre_fundo_receb', i===0?'CD-F1':'LOJA-F'+i);
     field('lacre_lateral_receb',i===0?'CD-L1':'LOJA-L'+i);
-    ev(`validarLacres('${cargo.id}')`);
+    await ev(`validarLacres('${cargo.id}')`);
     assert.ok(getDB()[i].lacresValidados);
     if (i===0) {
       field('codigo_palete_1',JSON.stringify({...qr,romaneio:'OUTRO'}));
-      ev('validarPalete(1)');assert.equal(getDB()[i].conferidos.length,0);
+      await ev('validarPalete(1)');assert.equal(getDB()[i].conferidos.length,0);
       const bytes=Buffer.from(firstQR.split(',')[1],'base64');
       const frame=decompressFrames(parseGIF(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)),true)[0];
       w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){return {data:new Uint8ClampedArray(frame.patch),width:frame.dims.width,height:frame.dims.height}}});
@@ -111,19 +126,19 @@ function decodeImage(uri) {
       assert.equal(byId('modalCameraPalete'),null);
       check('Câmera simulada: permissão negada fecha a tela; vídeo com QR real usa fallback sem BarcodeDetector e interrompe os tracks');
       assert.equal(getDB()[i].conferidos.length,1);
-      ev('validarPalete(1)');assert.equal(getDB()[i].conferidos.length,1);
-      field('codigo_palete_2',ev(`codigoPalete('${cargo.id}',2)`));ev('validarPalete(2)');
-    } else {field('codigo_palete_1',ev(`codigoPalete('${cargo.id}',1)`));ev('validarPalete(1)');}
+      await ev('validarPalete(1)');assert.equal(getDB()[i].conferidos.length,1);
+      field('codigo_palete_2',ev(`codigoPalete('${cargo.id}',2)`));await ev('validarPalete(2)');
+    } else {field('codigo_palete_1',ev(`codigoPalete('${cargo.id}',1)`));await ev('validarPalete(1)');}
     if (i===0) {
       field('ret_palete','sim');ev("alternarRetorno('palete')");
-      ev(`finalizarRetorno('${cargo.id}')`);assert.equal(getDB()[i].fim,null);
+      await ev(`finalizarRetorno('${cargo.id}')`);assert.equal(getDB()[i].fim,null);
       field('qtd_palete','3');field('nf_palete','RET-123');
     }
     if(i<2){
-      ev(`finalizarRetorno('${cargo.id}')`);assert.equal(getDB()[i].fim,null);
+      await ev(`finalizarRetorno('${cargo.id}')`);assert.equal(getDB()[i].fim,null);
       field('novo_lacre_fundo','LOJA-F'+(i+1));field('novo_lacre_lateral','LOJA-L'+(i+1));
     } else assert.equal(byId('novo_lacre_fundo'),null);
-    ev(`finalizarRetorno('${cargo.id}')`);
+    await ev(`finalizarRetorno('${cargo.id}')`);
     assert.ok(getDB()[i].fim);
     assert.ok(!byId('enc_'+cargo.id));
     assert.ok(!byId('conf_'+cargo.id));

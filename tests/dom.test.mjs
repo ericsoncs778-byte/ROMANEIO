@@ -31,6 +31,7 @@ test('complete HTML loads its auth/QR scripts and opens the requested area witho
   await new Promise(resolve => dom.window.addEventListener('load', resolve, { once: true }));
   // Finish the pageshow-triggered verification request before inspecting the page.
   await dom.window.fetch('/auth/session');
+  await dom.window.romaneioCloudReady;
   const { window } = dom;
   assert.ok(window.document.getElementById('formCD'));
   assert.equal(window.document.getElementById('auth-email').textContent, userA.email);
