@@ -5,3 +5,4 @@ node_modules/
 .vercel/
 build/
 test-results/
+supabase/.temp/

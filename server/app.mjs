@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { authForRequest, verifiedUser } from './auth.mjs';
 import { pages, safeNext } from './config.mjs';
 import { loginPage, unavailablePage } from './templates.mjs';
+import { membership, listRomaneios, validateChanges, recordId } from './data.mjs';
 
 const appFile = new URL('../private/romaneio.html', import.meta.url);
 
@@ -39,6 +40,23 @@ async function formData(req) {
   return new URLSearchParams(Buffer.concat(chunks).toString());
 }
 
+async function jsonBody(req) {
+  if (!String(req.headers['content-type']).startsWith('application/json')) throw Object.assign(new Error('Invalid content type'), { status: 415 });
+  let text;
+  if (req.body !== undefined) text = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+  else {
+    const chunks = []; let size = 0;
+    for await (const chunk of req) {
+      size += chunk.length;
+      if (size > 2 * 1024 * 1024) throw Object.assign(new Error('Body too large'), { status: 413 });
+      chunks.push(chunk);
+    }
+    text = Buffer.concat(chunks).toString();
+  }
+  if (Buffer.byteLength(text) > 2 * 1024 * 1024) throw Object.assign(new Error('Body too large'), { status: 413 });
+  try { return JSON.parse(text); } catch { throw Object.assign(new Error('Invalid JSON'), { status: 400 }); }
+}
+
 // authFetch is dependency injection for tests, never selected by a URL or environment flag.
 export function createHandler({ authFetch } = {}) {
   return async function handler(req, res) {
@@ -62,6 +80,28 @@ export function createHandler({ authFetch } = {}) {
       }
       if (req.method === 'POST' && !sameOrigin(req)) return send(res, 403, 'Origem não autorizada.');
       const client = authForRequest(req, res, authFetch);
+
+      if (path === '/data/romaneios') {
+        const json = (status, value) => send(res, status, JSON.stringify(value), 'application/json; charset=utf-8');
+        const user = await verifiedUser(client);
+        if (!user) return json(401, { error: 'unauthenticated' });
+        const member = await membership(client, user.id);
+        if (!member) return json(403, { error: 'access_denied' });
+        if (req.method === 'GET') {
+          const after = url.searchParams.get('after') || '';
+          if (after && !recordId.test(after)) return json(400, { error: 'invalid_cursor' });
+          return json(200, await listRomaneios(client, member, after));
+        }
+        if (member.access_role === 'viewer') return json(403, { error: 'read_only' });
+        const body = await jsonBody(req);
+        if (!validateChanges(body?.changes)) return json(400, { error: 'invalid_data' });
+        const { data, error } = await client.rpc('save_romaneios', { p_changes: body.changes });
+        if (error?.code === '40001') return json(409, { error: 'version_conflict' });
+        if (error?.code === '42501') return json(403, { error: 'access_denied' });
+        if (error && ['23514','23503','22023','22P02','23502'].includes(error.code)) return json(400, { error: 'invalid_data' });
+        if (error) throw new Error('Cloud save unavailable');
+        return json(200, { rows: data });
+      }
 
       if (path === '/auth/login' && req.method === 'POST') {
         const form = await formData(req);
@@ -111,6 +151,7 @@ export function createHandler({ authFetch } = {}) {
       // Never serve private/romaneio.html as a public static file.
       return send(res, 404, 'Página não encontrada.');
     } catch (error) {
+      if (req.url?.startsWith('/data/')) return send(res, [400, 413, 415].includes(error.status) ? error.status : 503, JSON.stringify({ error: error.status === 413 ? 'payload_too_large' : 'cloud_unavailable' }), 'application/json; charset=utf-8');
       if (error.status === 413 || error.status === 415) return send(res, error.status, 'Formulário inválido.');
       console.error('ROMANEIO: falha ao validar acesso.'); // no passwords, cookies or tokens in logs
       return send(res, 503, unavailablePage());

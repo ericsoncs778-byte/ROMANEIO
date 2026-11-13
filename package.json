@@ -1,6 +1,6 @@
 {
   "name": "romaneio-hiperideal",
-  "version": "46.0.0",
+  "version": "47.0.0",
   "private": true,
   "type": "module",
   "engines": { "node": "24.x" },

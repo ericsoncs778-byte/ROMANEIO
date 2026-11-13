@@ -1,110 +1,74 @@
 # ROMANEIO Digital · Hiperideal
 
-Aplicativo web v46, com a operação da versão Android v45 e login pelo Supabase
-**ddhirpnnuyflxnwszuqp**. O repositório continha apenas um README; a interface foi
-recuperada de `ROMANEIO_HIPERIDEAL_V45_ANDROID_PROJETO_E_GUIA.zip`.
+Versão web **v47**: login Supabase e romaneios compartilhados entre CD, lojas e gestão. Usa exclusivamente o projeto **ddhirpnnuyflxnwszuqp**, organização **ERICSON HI**, identificado como `ericson.silva@hiperideal.com.br`.
 
-## Executar
+## Executar e validar
 
 Requer Node.js 24.
 
 ```bash
-npm ci
+npm ci --ignore-scripts
 npm test
 npm run test:operacao
 npm run dev
 ```
 
-Abra `http://localhost:3000/login`. A URL e a chave **publishable** do projeto
-estão em `server/config.mjs`. Não é necessária uma senha de banco nem uma chave
-`service_role`. Não adicione essas credenciais ao código ou ao navegador.
+Abra `http://localhost:3000/login`. O servidor usa apenas a URL e a chave publishable em `server/config.mjs`, com a sessão do usuário. Nenhuma senha de banco, chave secret ou `service_role` é necessária.
 
-## Primeiro acesso
+## Banco e autorização
 
-O projeto estava ativo e sem usuários quando esta integração foi preparada.
-O provedor de e-mail está habilitado e exige confirmação de e-mail. A conta de
-acesso ao painel Supabase e os usuários do aplicativo são cadastros separados.
+A migração `supabase/migrations/20261113192625_romaneio_cloud_data.sql` já foi aplicada ao projeto de destino. `supabase/schema.sql` contém a mesma definição para consulta; não execute esse arquivo novamente sobre o banco já migrado. A tabela `profiles` existente e os usuários Auth foram preservados.
 
-1. No [Supabase Auth — Users](https://supabase.com/dashboard/project/ddhirpnnuyflxnwszuqp/auth/users),
-   o administrador deve usar **Add user → Create new user**, informar o e-mail do
-   operador e uma senha individual. Confirmar a identidade/e-mail do operador
-   antes de habilitar **Auto Confirm User**.
-2. Entrar no aplicativo com esse e-mail e essa senha. Nenhum usuário ou senha
-   foi criado automaticamente ou incluído neste repositório.
-3. Para recuperação de acesso, o administrador gerencia o usuário em Auth.
-   Esta versão não inclui cadastro público, convites nem recuperação por e-mail
-   na interface; portanto não depende de URLs de redirecionamento por e-mail.
-
-O cadastro por API permanece conforme a configuração existente do Supabase
-(`disable_signup=false`). Não confundir ausência de botão de cadastro com
-cadastro fechado. O controle desta versão é por usuário autenticado com e-mail
-confirmado: **todas as seis áreas são acessíveis a qualquer conta assim
-autenticada**. Não há aprovação adicional, restrição por loja ou diferença
-de permissões CD/loja/gestor. Para fechar novos cadastros, o administrador pode
-desativar **Allow new users to sign up** em Auth → Sign In / Providers.
-
-## Rotas
-
-| Rota | Acesso |
+| Tabela | Finalidade |
 | --- | --- |
-| `/login` | Público; quem já está autenticado segue para o aplicativo |
-| `/auth/login` | POST de e-mail/senha, somente da mesma origem |
-| `/auth/logout` | POST para encerrar a sessão deste dispositivo |
-| `/auth/session` | GET; 200 para sessão verificada, 401 sem sessão |
-| `/app/inicio` | Visão geral, exige login |
-| `/app/cd` | Emissão, exige login |
-| `/app/loja` | Recebimento, exige login |
-| `/app/painel` | Gestão, exige login |
-| `/app/documentos` | Impressões, exige login |
-| `/app/backup` | Backup, exige login |
+| `romaneio_workspaces` | Ambiente compartilhado ROMANEIO Hiperideal |
+| `romaneio_members` | Usuários explicitamente autorizados e seus papéis |
+| `romaneio_lojas` | As 36 lojas da base original, com endereço e situação |
+| `romaneios` | Carga completa, paletes, NFs, conferência, lacres e retornáveis |
 
-O HTML operacional fica em `private/`, fora da pasta pública, e só é enviado
-após `auth.getUser()` consultar o Supabase Auth no servidor. Links diretos
-sem sessão redirecionam ao login e retornam à área desejada após a entrada.
-Redirecionamentos pós-login são limitados às seis rotas acima.
+As quatro tabelas possuem RLS. O usuário precisa de uma associação ativa ao mesmo workspace do registro. Não há acesso anônimo, autoinscrição em um workspace nem exclusão física de romaneios pela API. O cancelamento mantém o registro com motivo e data. Esta versão compartilha todas as lojas entre os membros do workspace; não implementa isolamento de uma loja por usuário.
 
-Cookies são HttpOnly e SameSite=Lax; em HTTPS/Vercel usam Secure. O SDK renova
-sessões e propaga os cookies atualizados. O navegador revalida ao retornar à
-aba, ao voltar no histórico e a cada minuto; logout também avisa outras abas.
-Respostas autenticadas não podem ser armazenadas pelo navegador nem pela CDN.
-Falhas do Auth bloqueiam o acesso. A aplicação não usa metadados editáveis pelo
-usuário para conceder privilégios.
+Os papéis `admin` e `operator` podem gravar; `viewer` pode consultar. A conta Auth já existente e confirmada `ericson.silva@hiperideal.com.br` recebeu a associação inicial `admin`. Esse papel é mantido no banco e não usa metadados editáveis do usuário. Nenhuma senha foi criada, alterada ou incluída no código.
 
-## Dados operacionais e RLS
+Para autorizar outro usuário, cadastre-o primeiro no Supabase Auth. Depois, um administrador SQL pode executar, com o e-mail correto:
 
-Esta alteração integra **autenticação e rotas protegidas**. As cargas, notas,
-paletes e backups continuam no armazenamento local do navegador, sem
-sincronização entre dispositivos. Cada conta usa uma chave local diferente;
-isso evita misturar registros na interface, mas não substitui controle de
-acesso no banco nem criptografa os dados no aparelho. Não use um dispositivo
-compartilhado sem proteger o próprio perfil do navegador.
+```sql
+insert into public.romaneio_members (user_id, workspace_id, access_role)
+select u.id, w.id, 'operator'
+from auth.users u cross join public.romaneio_workspaces w
+where lower(u.email) = 'operador@hiperideal.com.br'
+  and u.email_confirmed_at is not null
+  and w.slug = 'romaneio-hiperideal';
+```
 
-As chaves antigas da v45 são preservadas, sem importação automática para a
-primeira conta que entrar. Exporte um backup na versão anterior e importe-o
-na conta correta quando necessário.
+Não há autoaprovação de novas contas. O provedor Auth pode manter o cadastro por API habilitado, mas uma conta nova não recebe acesso aos romaneios até ser associada ao workspace. A administração de usuários permanece no Supabase.
 
-A tabela existente `public.profiles` foi verificada: RLS habilitada, três
-políticas para o próprio usuário e nenhum SELECT para `anon`. Não foi alterada
-a estrutura do banco. A consulta de segurança do Supabase não apresentou
-alertas. Futuras tabelas operacionais precisarão de suas próprias políticas
-por loja/perfil, além deste login.
+## Salvamento e atualização entre aparelhos
 
-## Hospedagem
+O HTML operacional é enviado somente após o servidor validar a sessão com `auth.getUser()`. Os dados passam pela rota `/data/romaneios`, que verifica a associação ao workspace e usa o token do próprio usuário sob RLS. Os tokens ficam em cookies HttpOnly, Secure em HTTPS, sem acesso pelo JavaScript.
 
-`vercel.json` prepara uma única função Node.js, com rewrites para as rotas do
-aplicativo e arquivos estáticos em `public/`. Não hospede esta versão como HTML
-estático nem mova `private/romaneio.html` para `public/`: a validação depende
-do servidor. Um deploy não foi executado nesta alteração.
+Toda operação aguarda a confirmação do Supabase antes de indicar sucesso ou avançar para a impressão. A função `save_romaneios` executa um lote inteiro em uma transação, com uma versão por registro. Se outro aparelho já alterou o mesmo romaneio, o lote é recusado integralmente com conflito de versão. As funções são SECURITY INVOKER; a autorização continua aplicada no banco.
 
-## Validação
+A interface busca atualizações a cada 15 segundos e ao retornar à janela. O botão **Atualizar dados** força uma busca. A atualização automática aguarda quando há campos em edição, recebimento em andamento, câmera aberta ou uma gravação pendente, evitando descartar um formulário. A lista é paginada e a API mantém cada resposta abaixo do limite da hospedagem.
 
-`npm test` verifica a integração real do SDK com transporte Auth simulado:
-login, cookies, acesso direto sem sessão, rejeição de cookie adulterado,
-renovação de sessão, isolamento de requisições entre usuários, logout, origem,
-redirecionamentos e falha do Auth. Não cria contas no Supabase real.
+Esta versão precisa de conexão para confirmar gravações. Em falhas ou conflitos, restaura o último estado confirmado e preserva uma cópia da tentativa em **Baixar alteração não confirmada**. Não há confirmação falsa de envio nem reenvio automático sobre uma versão mais recente.
 
-`npm run test:operacao` executa os nove testes de operação da v45 adaptados à
-estrutura web: emissão com três lojas, QR, impressão, recebimento, lacres,
-conferência, câmera simulada e backup. A conexão real foi verificada pelo
-endpoint de configurações Auth e por consultas de RLS. O primeiro login real
-deve ser validado após o administrador cadastrar um usuário.
+## Preservar dados anteriores e importar backups
+
+O cache local é auxiliar. Antes da primeira carga da nuvem, os dados v46 do próprio usuário são preservados, quando presentes, em uma chave separada. O botão **Exportar dados anteriores** baixa esse conteúdo no aparelho onde ele foi criado. Os registros não são enviados automaticamente.
+
+Na aba **Backup**, importe esse JSON para mesclar os registros com a nuvem. A confirmação informa que códigos iguais serão atualizados. Cargas ausentes do backup continuam preservadas na nuvem. Por envio, o limite é de 200 registros alterados e 2 MB; cada carga admite até 200 paletes. Registros fora dos últimos 30 dias ficam fora do painel operacional, mas não são apagados.
+
+## Hospedagem e rotas
+
+`vercel.json` direciona `/login`, `/auth/*`, `/data/*` e `/app/*` para uma única função Node.js. O HTML operacional fica fora de `public/`. Não publique esta versão como HTML estático: autenticação e persistência dependem do servidor. As seis áreas continuam em `/app/inicio`, `/app/cd`, `/app/loja`, `/app/painel`, `/app/documentos` e `/app/backup`.
+
+## Testes
+
+`npm test` valida login, cookies, origem, rotas, autorização dos dados, gravações compartilhadas entre dois usuários, conflito de versões, lote atômico, dados inválidos, usuário somente leitura, paginação, falha de rede, preservação de dados antigos e recuperação de tentativas não confirmadas. As interfaces são executadas em JSDOM com o SDK real e transporte simulado.
+
+`npm run test:operacao` preserva os nove testes da operação v45, agora aguardando a confirmação da nuvem: emissão com três lojas, QR real, impressão, lacres, conferência, câmera simulada e backup.
+
+`tests/database-cloud.sql` foi executado no Supabase real: verifica RLS, isolamento entre workspaces, escrita/leitura, revisão de versões, rollback de lote com conflito e bloqueio de usuário não provisionado ou somente leitura. Todos os registros de teste são removidos pelo rollback.
+
+O advisor não apontou novos problemas nas tabelas. Permanece o aviso Auth pré-existente de [proteção contra senhas vazadas desativada](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
