@@ -31,6 +31,8 @@ async function open(t, user = userA, provisioned = true) {
   const dom = await JSDOM.fromURL(origin + '/app/inicio', {
     cookieJar: jar, resources: 'usable', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: console,
     beforeParse(w) {
+        w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
+        w.HTMLCanvasElement.prototype.getContext = () => null;
       // Capture browser intervals so thirty minutes can be advanced deterministically.
       w.setInterval = (run, delay) => { intervals.push({ run, delay }); return intervals.length; };
       w.fetch = (path, options = {}) => fetch(new URL(path, origin), { ...options, headers: { ...options.headers, Cookie: jar.getCookieStringSync(origin) } });

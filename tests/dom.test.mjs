@@ -22,6 +22,8 @@ test('complete HTML loads its auth/QR scripts and opens the requested area witho
   const dom = await JSDOM.fromURL(origin + '/app/cd', {
     cookieJar: jar, resources: 'usable', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: console,
     beforeParse(window) {
+        window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
+        window.HTMLCanvasElement.prototype.getContext = () => null;
       window.fetch = (path, options = {}) => fetch(new URL(path, origin), { ...options, headers: { ...options.headers, Cookie: jar.getCookieStringSync(origin) } });
       window.AbortSignal = AbortSignal;
       window.alert = message => { throw new Error(message); };

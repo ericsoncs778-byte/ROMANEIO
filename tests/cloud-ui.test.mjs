@@ -20,6 +20,8 @@ test('two interfaces share cloud data; conflicts/offline saves preserve drafts a
     const dom = await JSDOM.fromURL(origin + '/app/inicio', {
       cookieJar: jar, resources: 'usable', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: console,
       beforeParse(w) {
+        w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder;
+        w.HTMLCanvasElement.prototype.getContext = () => null;
         w.fetch = (path, options = {}) => fetch(new URL(path, origin), { ...options, headers: { ...options.headers, Cookie: jar.getCookieStringSync(origin), ...(options.method === 'POST' ? { Origin: origin } : {}) } });
         w.AbortSignal = AbortSignal; w.confirm = () => true; w.alert = () => {};
         if (legacy) w.localStorage.setItem('hiperideal_romaneio:' + user.id, JSON.stringify([load('ROM-OLD')]));

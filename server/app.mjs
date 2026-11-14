@@ -105,12 +105,13 @@ export function createHandler({ authFetch } = {}) {
 
       if (path === '/auth/login' && req.method === 'POST') {
         const form = await formData(req);
-        const email = (form.get('email') || '').trim();
+        const email = (form.get('email') || '').trim().toLowerCase();
         const password = form.get('password') || '';
         const next = safeNext(form.get('next'));
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254 || !password || password.length > 1024) {
           return send(res, 400, loginPage({ next, error: 'Informe seu e-mail e sua senha.' }));
         }
+        if (email === 'cd.@hiperideal.com.br') return send(res, 400, loginPage({ next, error: 'Use cd@hiperideal.com.br, sem ponto antes do @.' }));
         const { error } = await client.auth.signInWithPassword({ email, password });
         if (error) {
           if (!error.status || error.status >= 500) throw new Error('Auth unavailable');

@@ -95,3 +95,12 @@ test('concurrent users stay isolated and Auth outage fails closed', async t => {
   assert.equal(failed.status, 503);
   assert.doesNotMatch(await failed.text(), /formCD|localStorage/);
 });
+
+test('email normalization accepts case/whitespace and explains the mistyped CD address', async t => {
+ const {login,request} = await start(t);
+ const signedIn=await login('  '+userA.email.toUpperCase()+'  ');
+ assert.equal(signedIn.status,303);
+ const mistyped=await login('cd.@hiperideal.com.br');
+ assert.equal(mistyped.status,400);
+ assert.match(await mistyped.text(),/sem ponto antes do @/);
+});

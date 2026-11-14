@@ -1,6 +1,6 @@
 # ROMANEIO Digital · Hiperideal
 
-Versão web **v47**: login Supabase e romaneios compartilhados entre CD, lojas e gestão. Usa exclusivamente o projeto **ddhirpnnuyflxnwszuqp**, organização **ERICSON HI**, identificado como `ericson.silva@hiperideal.com.br`.
+Versão web **v48**: login Supabase e romaneios compartilhados entre CD, lojas e gestão. Usa exclusivamente o projeto **ddhirpnnuyflxnwszuqp**, organização **ERICSON HI**, identificado como `ericson.silva@hiperideal.com.br`.
 
 ## Executar e validar
 
@@ -72,3 +72,12 @@ Na aba **Backup**, importe esse JSON para mesclar os registros com a nuvem. A co
 `tests/database-cloud.sql` foi executado no Supabase real: verifica RLS, isolamento entre workspaces, escrita/leitura, revisão de versões, rollback de lote com conflito e bloqueio de usuário não provisionado ou somente leitura. Todos os registros de teste são removidos pelo rollback.
 
 O advisor não apontou novos problemas nas tabelas. Permanece o aviso Auth pré-existente de [proteção contra senhas vazadas desativada](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
+
+## V48: relatório e acesso
+
+- Painel de gestão: PDF executivo com filtros de data e loja, indicadores, comparativo, rastreabilidade e responsáveis. jsPDF 4.2.1 e AutoTable 5.0.9 ficam em assets locais, com licenças.
+- Tempo de descarga: chegada registrada no módulo Loja até finalizar a conferência e liberar o veículo. Ausência de horário não é tratada como zero.
+- A mesma interface é servida para todas as contas autorizadas. CD, Loja e administrador têm associação ativa com papel admin no mesmo workspace (verificação em 14/11/2026).
+- A conta de CD cadastrada é cd@hiperideal.com.br. A grafia cd.@hiperideal.com.br recebe orientação de correção, sem criar aliases de autenticação.
+- Quedas transitórias na validação da sessão mostram tentativa novamente, mantendo a edição e ocultando o conteúdo protegido até a revalidação.
+- Autenticação simulada nos testes não valida senhas reais: o teste final de entrada deve usar as credenciais de cada titular no aplicativo.

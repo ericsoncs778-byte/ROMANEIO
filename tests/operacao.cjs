@@ -11,6 +11,7 @@ fs.mkdirSync(results, {recursive:true});
 const source = fs.readFileSync(path.join(project, 'private/romaneio.html'), 'utf8').replace('/*__ROMANEIO_CONTEXT__*/', 'window.ROMANEIO_CONTEXT={userId:"test-operator",email:"operador@example.test",initialPage:"inicio"};');
 const dom = new JSDOM(source, {url:'https://romaneio.example/app/inicio',runScripts:'outside-only',pretendToBeVisual:true});
 const w = dom.window;
+w.TextEncoder = TextEncoder; w.TextDecoder = TextDecoder; w.HTMLCanvasElement.prototype.getContext = () => null;
 const alerts = [], prints = [], backups = [], checks = [];
 w.alert = message => alerts.push(message);
 w.confirm = () => true;
